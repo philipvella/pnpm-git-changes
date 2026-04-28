@@ -1,0 +1,22 @@
+{
+  "name": "pnpm-git-changes",
+  "version": "1.0.0",
+  "description": "CLI tool to compare git changes between environments and surface JIRA tickets",
+  "type": "module",
+  "bin": {
+    "pnpm-git-changes": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "chalk": "^5.3.0",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "glob": "^10.3.10",
+    "inquirer": "^9.2.15",
+    "js-yaml": "^4.1.0",
+    "openai": "^6.33.0"
+  }
+}
