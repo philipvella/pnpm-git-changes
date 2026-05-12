@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { loadConfig } from './config.js';
 import { fetchCommitFromUrl } from './fetcher.js';
-import { getCommitsWithFiles } from './git.js';
+import { getCommitsWithFiles, getCommitTimestamp } from './git.js';
 import { filterRelevantCommits } from './pnpm.js';
 import { extractJiraTickets, fetchJiraDetails } from './jira.js';
 import { generateWhatChangedBullets } from './openai-helper.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const OUTPUT_DIR = path.join(__dirname, '..', 'output');
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'changelog.md');
 
 async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, config) {
   const cleanTicketTitle = (ticket) => {
@@ -87,7 +94,35 @@ function buildTicketContributorsMap(relevantCommits) {
   return map;
 }
 
-async function buildReadmeOutput({ prodCommit, uatCommit, relevantCommits, tickets, ticketDetails, config }) {
+function pluralize(value, unit) {
+  return `${value} ${unit}${value === 1 ? '' : 's'}`;
+}
+
+function formatCommitAgeDifference(uatTimestamp, prodTimestamp) {
+  const diffSeconds = Math.abs(prodTimestamp - uatTimestamp);
+  const day = 24 * 60 * 60;
+  const hour = 60 * 60;
+  const minute = 60;
+
+  if (diffSeconds === 0) {
+    return 'UAT and Production commits were created at the same time.';
+  }
+
+  let display;
+  if (diffSeconds >= day) {
+    display = pluralize(Math.floor(diffSeconds / day), 'day');
+  } else if (diffSeconds >= hour) {
+    display = pluralize(Math.floor(diffSeconds / hour), 'hour');
+  } else {
+    display = pluralize(Math.max(1, Math.floor(diffSeconds / minute)), 'minute');
+  }
+
+  const olderEnv = uatTimestamp < prodTimestamp ? 'UAT' : 'Production';
+  const newerEnv = olderEnv === 'UAT' ? 'Production' : 'UAT';
+  return `${olderEnv} commit is ${display} older than ${newerEnv}.`;
+}
+
+async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, relevantCommits, tickets, ticketDetails, config }) {
   const date = new Date().toISOString().split('T')[0];
   const lines = [];
 
@@ -95,6 +130,9 @@ async function buildReadmeOutput({ prodCommit, uatCommit, relevantCommits, ticke
   lines.push('');
   lines.push(`> Generated on ${date}`);
   lines.push(`> Comparing UAT (\`${uatCommit.substring(0, 7)}\`) → Production (\`${prodCommit.substring(0, 7)}\`)`);
+  if (commitAgeDifference) {
+    lines.push(`> Commit age difference: ${commitAgeDifference}`);
+  }
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
@@ -176,18 +214,27 @@ async function main() {
     process.exit(0);
   }
 
+  let commitAgeDifference = '';
+  try {
+    const uatTimestamp = getCommitTimestamp(config.repoPath, uatCommit);
+    const prodTimestamp = getCommitTimestamp(config.repoPath, prodCommit);
+    commitAgeDifference = formatCommitAgeDifference(uatTimestamp, prodTimestamp);
+  } catch (err) {
+    console.warn(chalk.yellow(`  ⚠️  Could not compute commit age difference: ${err.message}`));
+  }
+
   // ── 3. Get commits between environments ───────────────────────────────────
   console.log(chalk.cyan('\nAnalysing git history...'));
 
   let commits;
   try {
-    commits = await getCommitsWithFiles(config.repoPath, uatCommit, prodCommit);
+    commits = await getCommitsWithFiles(config.repoPath, prodCommit, uatCommit);
     if (commits.length === 0) {
-      // UAT may be ahead of PROD — try the other direction
+      // Production may be ahead of UAT — try the other direction
       console.log(
         chalk.yellow('  ⚠️  No commits found in that direction, trying reverse...')
       );
-      commits = await getCommitsWithFiles(config.repoPath, prodCommit, uatCommit);
+      commits = await getCommitsWithFiles(config.repoPath, uatCommit, prodCommit);
     }
     console.log(chalk.green(`  ✓ Found ${commits.length} commit(s) between environments`));
   } catch (err) {
@@ -241,11 +288,17 @@ async function main() {
   const output = await buildReadmeOutput({
     prodCommit,
     uatCommit,
+    commitAgeDifference,
     relevantCommits,
     tickets,
     ticketDetails,
     config,
   });
+
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
+
+  console.log(chalk.green(`\n  ✓ Saved changelog to ${OUTPUT_FILE}`));
   console.log(chalk.bold.green('\n📄  README Output:\n'));
   console.log(output);
 

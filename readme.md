@@ -108,13 +108,14 @@ Example ticket line:
 
 ## Output shape
 
-The tool prints markdown to stdout (it does not write files automatically):
+The tool prints markdown to stdout and also writes it to `output/changelog.md` (the `output/` directory is gitignored):
 
 ```markdown
 # Changelog
 
 > Generated on YYYY-MM-DD
 > Comparing UAT (`abcdef1`) -> Production (`1234567`)
+> Commit age difference: UAT commit is 2 days older than Production.
 
 ## 📝 What Changed
 - The main areas updated are ...

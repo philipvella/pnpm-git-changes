@@ -81,3 +81,26 @@ export function getChangedFiles(repoPath, fromCommit, toCommit) {
   return output ? output.split('\n').filter(Boolean) : [];
 }
 
+/**
+ * Get commit timestamp in Unix seconds.
+ *
+ * @param {string} repoPath
+ * @param {string} commitHash
+ * @returns {number}
+ */
+export function getCommitTimestamp(repoPath, commitHash) {
+  let output;
+  try {
+    output = git(repoPath, `show -s --format=%ct ${commitHash}`);
+  } catch (err) {
+    throw new Error(`Could not get timestamp for commit ${commitHash}: ${err.message}`);
+  }
+
+  const timestamp = Number.parseInt(output, 10);
+  if (Number.isNaN(timestamp)) {
+    throw new Error(`Could not parse timestamp for commit ${commitHash}: ${output}`);
+  }
+
+  return timestamp;
+}
+
