@@ -128,16 +128,19 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, r
 
   lines.push('# Changelog');
   lines.push('');
-  lines.push(`> Generated on ${date}`);
-  lines.push(`> Comparing UAT (\`${uatCommit.substring(0, 7)}\`) → Production (\`${prodCommit.substring(0, 7)}\`)`);
-  if (commitAgeDifference) {
-    lines.push(`> Commit age difference: ${commitAgeDifference}`);
-  }
-  lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
-  lines.push('## 📝 What Changed');
+  lines.push('## 📝 Changelog');
   lines.push('');
+
+  const metadataParts = [
+    `Generated on ${date}`,
+    `Comparing UAT (\`${uatCommit.substring(0, 7)}\`) → Production (\`${prodCommit.substring(0, 7)}\`)`,
+  ];
+  if (commitAgeDifference) {
+    metadataParts.push(`Commit age difference: ${commitAgeDifference}`);
+  }
+  lines.push(`- ${metadataParts.join(' ')}`);
 
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');

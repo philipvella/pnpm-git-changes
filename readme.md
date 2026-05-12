@@ -113,11 +113,8 @@ The tool prints markdown to stdout and also writes it to `output/changelog.md` (
 ```markdown
 # Changelog
 
-> Generated on YYYY-MM-DD
-> Comparing UAT (`abcdef1`) -> Production (`1234567`)
-> Commit age difference: UAT commit is 2 days older than Production.
-
-## 📝 What Changed
+## 📝 Changelog
+- Generated on YYYY-MM-DD Comparing UAT (`abcdef1`) -> Production (`1234567`) Commit age difference: UAT commit is 2 days older than Production.
 - The main areas updated are ...
 - Notable implementation changes include ...
 
