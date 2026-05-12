@@ -94,18 +94,45 @@ function buildTicketContributorsMap(relevantCommits) {
   return map;
 }
 
+function getAppDisplayName(config) {
+  const fallback = (config.appPath || '').split('/').filter(Boolean).pop() || 'APP_NAME';
+  const appPkgPath = path.join(config.repoPath || '', config.appPath || '', 'package.json');
+
+  if (config.repoPath && config.appPath && fs.existsSync(appPkgPath)) {
+    try {
+      const appPkg = JSON.parse(fs.readFileSync(appPkgPath, 'utf-8'));
+      if (appPkg?.name) return appPkg.name;
+    } catch (_) {
+      // ignore malformed package.json and use fallback
+    }
+  }
+
+  return fallback;
+}
+
 function pluralize(value, unit) {
   return `${value} ${unit}${value === 1 ? '' : 's'}`;
 }
 
-function formatCommitAgeDifference(uatTimestamp, prodTimestamp) {
+function getAgeSeverityEmoji(diffSeconds) {
+  const week = 7 * 24 * 60 * 60;
+  const twoWeeks = 14 * 24 * 60 * 60;
+  if (diffSeconds < week) return '🟢';
+  if (diffSeconds < twoWeeks) return '🟠';
+  return '🔴';
+}
+
+function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
   const diffSeconds = Math.abs(prodTimestamp - uatTimestamp);
   const day = 24 * 60 * 60;
   const hour = 60 * 60;
   const minute = 60;
 
   if (diffSeconds === 0) {
-    return 'UAT and Production commits were created at the same time.';
+    return {
+      diffSeconds,
+      description: 'UAT and Production commits were created at the same time.',
+    };
   }
 
   let display;
@@ -119,18 +146,23 @@ function formatCommitAgeDifference(uatTimestamp, prodTimestamp) {
 
   const olderEnv = uatTimestamp < prodTimestamp ? 'UAT' : 'Production';
   const newerEnv = olderEnv === 'UAT' ? 'Production' : 'UAT';
-  return `${olderEnv} commit is ${display} older than ${newerEnv}.`;
+  return {
+    diffSeconds,
+    description: `${olderEnv} commit is ${display} older than ${newerEnv}.`,
+  };
 }
 
-async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, relevantCommits, tickets, ticketDetails, config }) {
+async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, commitAgeDiffSeconds, relevantCommits, tickets, ticketDetails, config }) {
   const date = new Date().toISOString().split('T')[0];
   const lines = [];
+  const appName = getAppDisplayName(config);
+  const appNameUpper = appName.toUpperCase();
 
-  lines.push('# Changelog');
+  lines.push(`# 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR ${appNameUpper}`);
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
-  lines.push('## 📝 Changelog');
+  lines.push('## 📝 Change log');
   lines.push('');
 
   const metadataParts = [
@@ -140,7 +172,8 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, r
   if (commitAgeDifference) {
     metadataParts.push(`Commit age difference: ${commitAgeDifference}`);
   }
-  lines.push(`- ${metadataParts.join(' ')}`);
+  const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? `${getAgeSeverityEmoji(commitAgeDiffSeconds)} ` : '';
+  lines.push(`- ${ageEmoji}${metadataParts.join(' ')}`);
 
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
@@ -218,10 +251,13 @@ async function main() {
   }
 
   let commitAgeDifference = '';
+  let commitAgeDiffSeconds;
   try {
     const uatTimestamp = getCommitTimestamp(config.repoPath, uatCommit);
     const prodTimestamp = getCommitTimestamp(config.repoPath, prodCommit);
-    commitAgeDifference = formatCommitAgeDifference(uatTimestamp, prodTimestamp);
+    const commitAgeInfo = getCommitAgeInfo(uatTimestamp, prodTimestamp);
+    commitAgeDifference = commitAgeInfo.description;
+    commitAgeDiffSeconds = commitAgeInfo.diffSeconds;
   } catch (err) {
     console.warn(chalk.yellow(`  ⚠️  Could not compute commit age difference: ${err.message}`));
   }
@@ -292,6 +328,7 @@ async function main() {
     prodCommit,
     uatCommit,
     commitAgeDifference,
+    commitAgeDiffSeconds,
     relevantCommits,
     tickets,
     ticketDetails,

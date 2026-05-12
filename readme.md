@@ -1,6 +1,6 @@
 # pnpm-git-changes
 
-`pnpm-git-changes` compares deployed commits between UAT and Production, filters to app-relevant changes in a pnpm workspace, extracts Jira tickets from commit messages, and prints a markdown changelog.
+`pnpm-git-changes` compares deployed commits between UAT and Production, filters to app-relevant changes in a pnpm workspace, extracts Jira tickets from commit messages, and generates a markdown changelog.
 
 ## What it does
 
@@ -13,11 +13,12 @@
 2. Reads git history between those commits (and tries reverse direction if needed).
 3. Filters commits to your app scope:
    - Excludes lock-file-only commits (`*.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`).
-   - In pnpm workspaces, keeps only files in the target app and, when detectable, only changed dependency files/components that are reachable from the app import graph.
+   - By default, in pnpm workspaces, keeps only files in the target app and (when detectable) only changed dependency files/components reachable from the app import graph.
+   - Optional toggle: include all repo changes (still excluding lock-file-only commits).
 4. Extracts Jira IDs from commit messages using `\b[A-Z]{2,10}-\d+\b`.
 5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
 6. Optionally uses OpenAI to generate two concise "What Changed" bullets.
-7. Prints changelog markdown to stdout.
+7. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
 
 ## Requirements
 
@@ -77,6 +78,7 @@ Prompted values:
 8. If Jira enabled: Jira base URL, Atlassian email, Atlassian API token
 9. Whether to configure OpenAI API key
 10. If OpenAI enabled: OpenAI API key
+11. Toggle to include all repo changes, or focus on app + workspace dependencies used by the app
 
 Environment variables supported:
 
@@ -92,6 +94,7 @@ Environment variables supported:
 - `ATLASSIAN_EMAIL`
 - `ATLASSIAN_API_TOKEN`
 - `OPENAI_API_KEY`
+- `INCLUDE_ALL_CHANGES` (`true` or `false`)
 
 ## Jira integration
 
@@ -111,10 +114,10 @@ Example ticket line:
 The tool prints markdown to stdout and also writes it to `output/changelog.md` (the `output/` directory is gitignored):
 
 ```markdown
-# Changelog
+# 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
-## 📝 Changelog
-- Generated on YYYY-MM-DD Comparing UAT (`abcdef1`) -> Production (`1234567`) Commit age difference: UAT commit is 2 days older than Production.
+## 📝 Change log
+- 🟠 Generated on YYYY-MM-DD Comparing UAT (`abcdef1`) -> Production (`1234567`) Commit age difference: UAT commit is 10 days older than Production.
 - The main areas updated are ...
 - Notable implementation changes include ...
 
@@ -128,4 +131,5 @@ The tool prints markdown to stdout and also writes it to `output/changelog.md` (
 - If both environments resolve to the same commit, the tool exits with no changes.
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
+- The first `## 📝 Change log` item includes an age indicator emoji based on commit age difference: `🟢` (< 7 days), `🟠` (>= 7 and < 14 days), `🔴` (>= 14 days).
 - Jira/OpenAI enrichment is optional; core comparison and ticket extraction still work without them.
