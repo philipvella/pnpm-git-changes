@@ -131,5 +131,8 @@ The tool prints markdown to stdout and also writes it to `output/changelog.md` (
 - If both environments resolve to the same commit, the tool exits with no changes.
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
-- The first `## 📝 Change log` item includes an age indicator emoji based on commit age difference: `🟢` (< 7 days), `🟠` (>= 7 and < 14 days), `🔴` (>= 14 days).
+- The first `## 📝 Change log` item includes an age indicator emoji based on commit age difference:
+  - `🟢` (< 7 days)
+  - `🟠` (>= 7 and < 14 days)
+  - `🔴` (>= 14 days)
 - Jira/OpenAI enrichment is optional; core comparison and ticket extraction still work without them.
