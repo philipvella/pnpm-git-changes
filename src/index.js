@@ -248,7 +248,7 @@ async function main() {
   }
 
   // ── 4. Filter to commits relevant to the application ──────────────────────
-  console.log(chalk.cyan('\nFiltering relevant changes via pnpm workspace analysis...'));
+  console.log(chalk.cyan('\nFiltering relevant changes via pnpm workspace + app usage analysis...'));
 
   let relevantCommits;
   try {

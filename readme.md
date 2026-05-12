@@ -13,7 +13,7 @@
 2. Reads git history between those commits (and tries reverse direction if needed).
 3. Filters commits to your app scope:
    - Excludes lock-file-only commits (`*.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`).
-   - In pnpm workspaces, keeps only files in the target app and its workspace dependency graph.
+   - In pnpm workspaces, keeps only files in the target app and, when detectable, only changed dependency files/components that are reachable from the app import graph.
 4. Extracts Jira IDs from commit messages using `\b[A-Z]{2,10}-\d+\b`.
 5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
 6. Optionally uses OpenAI to generate two concise "What Changed" bullets.
