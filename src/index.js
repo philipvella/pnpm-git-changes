@@ -33,9 +33,11 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
   const lines = [];
   if (topTicketTitles.length > 0) {
     lines.push('The main areas updated are :');
+    lines.push('');
     topTicketTitles.forEach((title, idx) => {
-      const letter = String.fromCharCode(97 + idx); // a, b, c, ...
+      const letter = String.fromCharCode(97 + idx);
       lines.push(`   ${letter}. ${title},`);
+      lines.push('');
     });
   } else {
     lines.push('These updates are identified directly from commit history and ticket references in the branch.');
@@ -46,7 +48,7 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
 
 function statusBadge(status) {
   if (!status) return '';
-  return status;
+  return `\`${status}\``;
 }
 
 function buildTicketContributorsMap(relevantCommits) {
@@ -177,7 +179,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
       const authors = ticketContributors[ticket] ? ` 👤 ${[...ticketContributors[ticket]].join(', ')}` : '';
 
       lines.push(`${ticketNum}. ${link}`);
-      lines.push(`   a. ${status}${authors}`);
+      lines.push(`   ${status}${authors}`);
       ticketNum++;
     }
   }
