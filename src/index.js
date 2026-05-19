@@ -28,15 +28,12 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
   // ── Static fallbacks ──────────────────────────────────────────────────────
   const topTicketTitles = tickets.map(cleanTicketTitle).filter(Boolean).slice(0, 3);
 
-  // Always use structured format with "The main areas updated are :" + sub-bullets
+  // Always use structured format with "The main areas updated are :"
   const lines = [];
   if (topTicketTitles.length > 0) {
     lines.push('The main areas updated are :');
-    lines.push('');
-    topTicketTitles.forEach((title, idx) => {
-      const letter = String.fromCharCode(97 + idx);
-      lines.push(`   ${letter}. ${title},`);
-      lines.push('');
+    topTicketTitles.forEach((title) => {
+      lines.push(`${title},`);
     });
   } else {
     lines.push('These updates are identified directly from commit history and ticket references in the branch.');
@@ -145,15 +142,17 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
     lines.push('_No relevant changes found._');
   } else {
     if (commitAgeDifference) {
-      lines.push(`${itemNum}. ${ageEmoji} ${commitAgeDifference}`);
-      itemNum++;
+      lines.push(`${ageEmoji} ${commitAgeDifference}`);
     }
 
     const whatChangedLines = await buildWhatChangedList(relevantCommits, tickets, ticketDetails, config);
     if (whatChangedLines.length > 0) {
-      lines.push(`${itemNum}. ${whatChangedLines[0]}`);
-      if (whatChangedLines.length > 1) {
-        lines.push(...whatChangedLines.slice(1));
+      lines.push(whatChangedLines[0]);
+      itemNum = 1;
+      for (const line of whatChangedLines.slice(1)) {
+        if (!line.trim()) continue;
+        lines.push(`${itemNum}. ${line}`);
+        itemNum++;
       }
     }
   }

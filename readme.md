@@ -110,14 +110,11 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 
 📝 Change log:
 
-1. 🟢 Production commit is `3 days` older than UAT.
-2. The main areas updated are :
-
-   a. Ticket title one,
-
-   b. Ticket title two,
-
-   c. Ticket title three,
+🟢 Production commit is `3 days` older than UAT.
+The main areas updated are :
+1. Ticket title one,
+2. Ticket title two,
+3. Ticket title three,
 
 🎫 Jira Tickets:
 
