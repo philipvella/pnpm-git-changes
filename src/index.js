@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadConfig } from './config.js';
-import { fetchCommitFromUrl } from './fetcher.js';
 import { getCommitsWithFiles, getCommitTimestamp } from './git.js';
 import { filterRelevantCommits } from './pnpm.js';
 import { extractJiraTickets, fetchJiraDetails } from './jira.js';
@@ -193,37 +192,19 @@ async function main() {
   // ── 1. Load or collect configuration ─────────────────────────────────────
   const config = await loadConfig();
 
-  // ── 2. Fetch git commit hashes from environment meta tags ─────────────────
+  // ── 2. Resolve commit hashes ──────────────────────────────────────────────
   console.log(chalk.cyan('\nResolving commits...'));
 
-  let prodCommit, uatCommit;
+  const prodCommit = (config.prodCommit || '').trim();
+  const uatCommit = (config.uatCommit || '').trim();
 
-  if (config.commitSource === 'manual') {
-    prodCommit = (config.prodCommit || '').trim();
-    uatCommit = (config.uatCommit || '').trim();
-    if (!prodCommit || !uatCommit) {
-      console.error(chalk.red('  ✗ Manual mode requires both production and UAT commit hashes.'));
-      process.exit(1);
-    }
-    console.log(chalk.green(`  ✓ Production : ${prodCommit} (manual)`));
-    console.log(chalk.green(`  ✓ UAT        : ${uatCommit} (manual)`));
-  } else {
-    try {
-      prodCommit = await fetchCommitFromUrl(config.prodUrl);
-      console.log(chalk.green(`  ✓ Production : ${prodCommit}`));
-    } catch (err) {
-      console.error(chalk.red(`  ✗ Failed to fetch production commit: ${err.message}`));
-      process.exit(1);
-    }
-
-    try {
-      uatCommit = await fetchCommitFromUrl(config.uatUrl);
-      console.log(chalk.green(`  ✓ UAT        : ${uatCommit}`));
-    } catch (err) {
-      console.error(chalk.red(`  ✗ Failed to fetch UAT commit: ${err.message}`));
-      process.exit(1);
-    }
+  if (!prodCommit || !uatCommit) {
+    console.error(chalk.red('  ✗ Both production and UAT commit hashes are required.'));
+    process.exit(1);
   }
+
+  console.log(chalk.green(`  ✓ Production : ${prodCommit}`));
+  console.log(chalk.green(`  ✓ UAT        : ${uatCommit}`));
 
   if (prodCommit === uatCommit) {
     console.log(

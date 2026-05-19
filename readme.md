@@ -4,12 +4,7 @@
 
 ## What it does
 
-1. Resolves two commit hashes (UAT and Production):
-   - `url` mode: fetches each page and reads commit from one of:
-     - `<meta name="git-commit" content="...">`
-     - `<meta property="git-commit" content="...">`
-     - `data-git-commit` on `<body>` or `<html>`
-   - `manual` mode: uses commit hashes you enter.
+1. Resolves two commit hashes (Production and UAT) entered manually.
 2. Reads git history between those commits (and tries reverse direction if needed).
 3. Filters commits to your app scope:
    - Excludes lock-file-only commits (`*.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`).
@@ -23,7 +18,6 @@
 
 - Node.js (ESM-compatible runtime)
 - Local clone of the target git repository
-- UAT and Production pages exposing a git commit marker (only for `url` mode)
 - Optional Jira Cloud credentials for enriched ticket details
 - Optional `OPENAI_API_KEY` for AI-generated "What Changed" bullets
 
@@ -67,23 +61,19 @@ On later runs, if saved config exists, it asks:
 
 Prompted values:
 
-1. Commit source mode (`url` or `manual`)
-2. If `url`: Production URL + UAT URL
-3. If `manual`: Production commit hash + UAT commit hash
-4. Local repo path (absolute)
-5. App path inside repo (for example `apps/my-app`)
-6. Branch name (saved, currently informational)
-7. Whether to configure Jira credentials
-8. If Jira enabled: Jira base URL, Atlassian email, Atlassian API token
-9. Whether to configure OpenAI API key
-10. If OpenAI enabled: OpenAI API key
-11. Toggle to include all repo changes, or focus on app + workspace dependencies used by the app
+1. Production commit hash
+2. UAT commit hash
+3. Local repo path (absolute)
+4. App path inside repo (for example `apps/my-app`)
+5. Branch name (saved, currently informational)
+6. Whether to configure Jira credentials
+7. If Jira enabled: Jira base URL, Atlassian email, Atlassian API token
+8. Whether to configure OpenAI API key
+9. If OpenAI enabled: OpenAI API key
+10. Toggle to include all repo changes, or focus on app + workspace dependencies used by the app
 
 Environment variables supported:
 
-- `COMMIT_SOURCE` (`url` or `manual`)
-- `PROD_URL`
-- `UAT_URL`
 - `PROD_COMMIT`
 - `UAT_COMMIT`
 - `REPO_PATH`
