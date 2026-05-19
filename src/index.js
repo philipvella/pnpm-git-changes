@@ -26,55 +26,27 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
       .trim();
   };
 
-  const cleanCommitMessage = (message) => message
-    .replace(/^Merged PR\s*\d+:\s*/i, '')
-    .replace(/^[A-Z]{2,10}-\d+[:\s-]+/i, '')
-    .replace(/^(feat|fix|chore|refactor|docs|test|perf)\([^)]*\):\s*/i, '')
-    .replace(/^(feat|fix|chore|refactor|docs|test|perf)\s*[:/-]\s*/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // ── Try AI-generated bullets ──────────────────────────────────────────────
-  const [aiFirst, aiSecond] = await generateWhatChangedBullets(
-    relevantCommits, tickets, ticketDetails, config
-  );
-
   // ── Static fallbacks ──────────────────────────────────────────────────────
   const topTicketTitles = tickets.map(cleanTicketTitle).filter(Boolean).slice(0, 3);
-  const cleanedMessages = relevantCommits.map((c) => cleanCommitMessage(c.message)).filter(Boolean);
-  const topChanges = [...new Set(cleanedMessages)].slice(0, 3);
 
-  const firstSentence = aiFirst ?? (
-    topTicketTitles.length > 0
-      ? `The main areas updated are ${topTicketTitles.join(', ')}.`
-      : 'These updates are identified directly from commit history and ticket references in the branch.'
-  );
+  // Always use structured format with "The main areas updated are :" + sub-bullets
+  const lines = [];
+  if (topTicketTitles.length > 0) {
+    lines.push('The main areas updated are :');
+    topTicketTitles.forEach((title, idx) => {
+      const letter = String.fromCharCode(97 + idx); // a, b, c, ...
+      lines.push(`   ${letter}. ${title},`);
+    });
+  } else {
+    lines.push('These updates are identified directly from commit history and ticket references in the branch.');
+  }
 
-  const secondSentence = aiSecond ?? (
-    topChanges.length > 0
-      ? `Notable implementation changes include ${topChanges.join('; ')}.`
-      : 'Detailed commit-level descriptions were limited for this comparison.'
-  );
-
-  return [
-    `- ${firstSentence}`,
-    `- ${secondSentence}`,
-  ];
+  return lines;
 }
 
 function statusBadge(status) {
   if (!status) return '';
-  const map = {
-    'Done': '✅',
-    'Closed': '✅',
-    'In Progress': '🔄',
-    'In Review': '👀',
-    'To Do': '📋',
-    'Open': '📋',
-    'Blocked': '🚫',
-  };
-  const icon = map[status] || '🎫';
-  return ` ${icon} \`${status}\``;
+  return status;
 }
 
 function buildTicketContributorsMap(relevantCommits) {
@@ -148,7 +120,7 @@ function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
   const newerEnv = olderEnv === 'UAT' ? 'Production' : 'UAT';
   return {
     diffSeconds,
-    description: `${olderEnv} commit is ${display} older than ${newerEnv}.`,
+    description: `${olderEnv} commit is \`${display}\` older than ${newerEnv}.`,
   };
 }
 
@@ -162,40 +134,51 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
-  lines.push('## 📝 Change log');
+  lines.push('Change log:');
   lines.push('');
 
-  const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? `${getAgeSeverityEmoji(commitAgeDiffSeconds)} ` : '';
-  const metadataHeader = `${date} Comparing UAT (${uatCommit.substring(0, 7)}) → Production (${prodCommit.substring(0, 7)})`;
-  if (commitAgeDifference) {
-    lines.push(`- **Commit age difference:** ${ageEmoji}${commitAgeDifference}`);
-  }
-  lines.push(`- **Generated on:** ${metadataHeader}`);
+  const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? getAgeSeverityEmoji(commitAgeDiffSeconds) : '';
+  let itemNum = 1;
 
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
   } else {
-    lines.push(...(await buildWhatChangedList(relevantCommits, tickets, ticketDetails, config)));
+    if (commitAgeDifference) {
+      lines.push(`${itemNum}. ${ageEmoji} ${commitAgeDifference}`);
+      itemNum++;
+    }
+
+    const whatChangedLines = await buildWhatChangedList(relevantCommits, tickets, ticketDetails, config);
+    if (whatChangedLines.length > 0) {
+      lines.push(`${itemNum}. ${whatChangedLines[0]}`);
+      if (whatChangedLines.length > 1) {
+        lines.push(...whatChangedLines.slice(1));
+      }
+    }
   }
 
   lines.push('');
 
   // ── Jira Tickets summary table ────────────────────────────────────────────
-  lines.push('## 🎫 Jira Tickets');
+  lines.push('Jira Tickets:');
   lines.push('');
 
   if (tickets.length === 0) {
     lines.push('_No Jira ticket references found in commit messages._');
   } else {
     const ticketContributors = buildTicketContributorsMap(relevantCommits);
+    let ticketNum = 1;
     for (const ticket of tickets) {
       const detail = ticketDetails[ticket];
       const title = detail?.summary && detail.summary !== '(Could not fetch)' ? detail.summary : 'No title available';
       const url = detail?.url || (config.atlassianBaseUrl ? `${config.atlassianBaseUrl.replace(/\/$/, '')}/browse/${ticket}` : '');
-      const badge = statusBadge(detail?.status);
-      const link = url ? `[${ticket} — ${title}](${url})` : `${ticket} — ${title}`;
+      const status = statusBadge(detail?.status);
+      const link = url ? `[${ticket} – ${title}](${url})` : `${ticket} – ${title}`;
       const authors = ticketContributors[ticket] ? ` 👤 ${[...ticketContributors[ticket]].join(', ')}` : '';
-      lines.push(`1. ${link}${badge}${authors}`);
+
+      lines.push(`${ticketNum}. ${link}`);
+      lines.push(`   a. ${status}${authors}`);
+      ticketNum++;
     }
   }
 
