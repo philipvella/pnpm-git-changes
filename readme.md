@@ -17,8 +17,7 @@
    - Optional toggle: include all repo changes (still excluding lock-file-only commits).
 4. Extracts Jira IDs from commit messages using `\b[A-Z]{2,10}-\d+\b`.
 5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
-6. Optionally uses OpenAI to generate two concise "What Changed" bullets.
-7. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
+6. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
 
 ## Requirements
 
@@ -99,31 +98,42 @@ Environment variables supported:
 ## Jira integration
 
 - With Jira credentials, each ticket includes title and status from Jira REST API.
-- Ticket output is markdown and clickable when Jira base URL is configured.
-- Contributors are extracted from commit authors and shown inline next to each ticket.
+- Ticket title is a clickable markdown link when Jira base URL is configured.
+- Status is shown in backticks below the ticket title.
+- Contributors are extracted from commit authors and shown inline next to each status.
 - If Jira lookup fails for a ticket, the ticket still appears and the tool continues.
 
-Example ticket line:
+Example ticket output:
 
 ```markdown
-1. [PROJ-123 - Ticket title](https://your-domain.atlassian.net/browse/PROJ-123) ✅ `Done` 👤 Jane Smith
+1. [PROJ-123 – Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
+   `Done` 👤 Jane Smith
 ```
 
 ## Output shape
 
-The tool prints markdown to stdout and also writes it to `output/changelog.md` (the `output/` directory is gitignored):
+The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 
 ```markdown
 # 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
-## 📝 Change log
-- 🟠 Generated on YYYY-MM-DD Comparing UAT (`abcdef1`) -> Production (`1234567`) Commit age difference: UAT commit is 10 days older than Production.
-- The main areas updated are ...
-- Notable implementation changes include ...
+Change log:
 
-## 🎫 Jira Tickets
-1. [PROJ-123 - Title](https://your-domain.atlassian.net/browse/PROJ-123) ✅ `Done` 👤 Jane Smith
-1. [PROJ-124 - Another Title](https://your-domain.atlassian.net/browse/PROJ-124) 🔄 `In Progress` 👤 John Doe, Jane Smith
+1. 🟢 Production commit is `3 days` older than UAT.
+2. The main areas updated are :
+
+   a. Ticket title one,
+
+   b. Ticket title two,
+
+   c. Ticket title three,
+
+Jira Tickets:
+
+1. [PROJ-123 – Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
+   `Done` 👤 Jane Smith
+2. [PROJ-124 – Another title](https://your-domain.atlassian.net/browse/PROJ-124)
+   `In Progress` 👤 John Doe
 ```
 
 ## Notes
@@ -131,8 +141,9 @@ The tool prints markdown to stdout and also writes it to `output/changelog.md` (
 - If both environments resolve to the same commit, the tool exits with no changes.
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
-- The first `## 📝 Change log` item includes an age indicator emoji based on commit age difference:
+- The first `Change log:` item includes an age indicator emoji based on commit age difference:
   - `🟢` (< 7 days)
   - `🟠` (>= 7 and < 14 days)
   - `🔴` (>= 14 days)
-- Jira/OpenAI enrichment is optional; core comparison and ticket extraction still work without them.
+- The commit age duration is shown in backticks, e.g. `` `13 days` ``.
+- Jira enrichment is optional; core comparison and ticket extraction still work without it.
