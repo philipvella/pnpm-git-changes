@@ -18,6 +18,7 @@
 
 - Node.js (ESM-compatible runtime)
 - Local clone of the target git repository
+- 
 - Optional Jira Cloud credentials for enriched ticket details
 - Optional `OPENAI_API_KEY` for AI-generated "What Changed" bullets
 

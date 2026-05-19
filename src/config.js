@@ -112,19 +112,22 @@ export async function loadConfig() {
       {
         type: 'confirm',
         name: 'configureJira',
-        message: 'Configure Jira credentials?',
-        default: !!(current.atlassianEmail || updateMode),
+        message: current.atlassianEmail ? 'Keep current Jira credentials?' : 'Configure Jira credentials?',
+        default: !!current.atlassianEmail,
       },
       {
         type: 'confirm',
         name: 'configureOpenAI',
-        message: 'Configure OpenAI API key (for AI-generated "What Changed" summary)?',
-        default: !!(current.openaiApiKey || updateMode),
+        message: current.openaiApiKey ? 'Keep current OpenAI API key?' : 'Configure OpenAI API key?',
+        default: !!current.openaiApiKey,
       },
     ]);
 
     let jiraAnswers = {};
-    if (answers.configureJira) {
+    const shouldConfigureJira = current.atlassianEmail
+      ? !answers.configureJira  // "Keep current?" No → re-enter
+      : answers.configureJira;  // "Configure?" Yes → enter
+    if (shouldConfigureJira) {
       jiraAnswers = await inquirer.prompt([
         {
           type: 'input',
@@ -151,7 +154,10 @@ export async function loadConfig() {
     }
 
     let openaiAnswers = {};
-    if (answers.configureOpenAI) {
+    const shouldConfigureOpenAI = current.openaiApiKey
+      ? !answers.configureOpenAI  // "Keep current?" No → re-enter
+      : answers.configureOpenAI;  // "Configure?" Yes → enter
+    if (shouldConfigureOpenAI) {
       openaiAnswers = await inquirer.prompt([
         {
           type: 'password',
