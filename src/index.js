@@ -135,7 +135,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
-  lines.push('Change log:');
+  lines.push('📝 Change log:');
   lines.push('');
 
   const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? getAgeSeverityEmoji(commitAgeDiffSeconds) : '';
@@ -161,7 +161,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── Jira Tickets summary table ────────────────────────────────────────────
-  lines.push('Jira Tickets:');
+  lines.push('🎫 Jira Tickets:');
   lines.push('');
 
   if (tickets.length === 0) {

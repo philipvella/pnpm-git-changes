@@ -108,7 +108,7 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 ```markdown
 # 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
-Change log:
+📝 Change log:
 
 1. 🟢 Production commit is `3 days` older than UAT.
 2. The main areas updated are :
@@ -119,7 +119,7 @@ Change log:
 
    c. Ticket title three,
 
-Jira Tickets:
+🎫 Jira Tickets:
 
 1. [PROJ-123 – Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
    `Done` 👤 Jane Smith
@@ -132,7 +132,7 @@ Jira Tickets:
 - If both environments resolve to the same commit, the tool exits with no changes.
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
-- The first `Change log:` item includes an age indicator emoji based on commit age difference:
+- The first `📝 Change log:` item includes an age indicator emoji based on commit age difference:
   - `🟢` (< 7 days)
   - `🟠` (>= 7 and < 14 days)
   - `🔴` (>= 14 days)
