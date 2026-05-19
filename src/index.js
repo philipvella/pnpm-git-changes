@@ -132,7 +132,6 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
-  lines.push('📝 Change log:');
   lines.push('');
 
   const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? getAgeSeverityEmoji(commitAgeDiffSeconds) : '';

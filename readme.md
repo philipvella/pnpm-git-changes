@@ -108,7 +108,6 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 ```markdown
 # 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
-📝 Change log:
 
 🟢 Production commit is `3 days` older than UAT.
 The main areas updated are :
