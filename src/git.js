@@ -4,9 +4,10 @@ import { execSync } from 'child_process';
  * Run a git command in the given repo directory.
  */
 function git(repoPath, args) {
-  return execSync(`git -C "${repoPath}" ${args}`, {
+  return execSync(`git --no-pager -C "${repoPath}" ${args}`, {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env, GIT_PAGER: 'cat', PAGER: 'cat' },
   }).trim();
 }
 
