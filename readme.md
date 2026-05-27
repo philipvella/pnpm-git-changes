@@ -110,6 +110,8 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 
 
 🟢 Production commit is `3 days` older than UAT.
+Compared: Production | `a1b2c3d` with UAT | `e4f5g6h`
+
 The main areas updated are :
 1. Ticket title one,
 2. Ticket title two,
@@ -128,6 +130,7 @@ The main areas updated are :
 - If both environments resolve to the same commit, the tool exits with no changes.
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
+- Output includes a concise one-line commit comparison: `Production | shortHash` with `UAT | shortHash`.
 - The first `📝 Change log:` item includes an age indicator emoji based on commit age difference:
   - `🟢` (< 7 days)
   - `🟠` (>= 7 and < 14 days)

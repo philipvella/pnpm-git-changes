@@ -144,6 +144,9 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
       lines.push(`${ageEmoji} ${commitAgeDifference}`);
     }
 
+    lines.push(`Compared: Production | \`${prodCommit.slice(0, 7)}\` with UAT | \`${uatCommit.slice(0, 7)}\``);
+    lines.push('');
+
     const whatChangedLines = await buildWhatChangedList(relevantCommits, tickets, ticketDetails, config);
     if (whatChangedLines.length > 0) {
       lines.push(whatChangedLines[0]);
