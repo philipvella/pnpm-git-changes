@@ -25,7 +25,30 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
       .trim();
   };
 
-  // ── Static fallbacks ──────────────────────────────────────────────────────
+  // Try AI wording first to keep this section more natural for human readers.
+  try {
+    const [mainAreasBullet] = await generateWhatChangedBullets(
+      relevantCommits,
+      tickets,
+      ticketDetails,
+      config
+    );
+
+    if (mainAreasBullet) {
+      const normalized = mainAreasBullet
+        .replace(/^The main areas updated are\s*/i, '')
+        .replace(/^[:\-]\s*/, '')
+        .trim();
+
+      if (normalized) {
+        return ['The main areas updated are :', normalized];
+      }
+    }
+  } catch (_) {
+    // Fall through to static fallback when AI is unavailable.
+  }
+
+  // ── Static fallback ───────────────────────────────────────────────────────
   const topTicketTitles = tickets.map(cleanTicketTitle).filter(Boolean).slice(0, 3);
 
   // Always use structured format with "The main areas updated are :"
