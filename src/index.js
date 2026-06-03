@@ -189,6 +189,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
 
 async function main() {
   console.log(chalk.bold.blue('\n🔍  pnpm-git-changes\n'));
+  console.log(chalk.gray('HTTP debug logging is enabled for outbound API requests.'));
 
   // ── 1. Load or collect configuration ─────────────────────────────────────
   const config = await loadConfig();

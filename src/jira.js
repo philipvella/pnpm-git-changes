@@ -1,4 +1,46 @@
 import axios from 'axios';
+import {
+  logHttpRequestError,
+  logHttpRequestStart,
+  logHttpRequestSuccess,
+} from './http-debug.js';
+
+const jiraClient = axios.create();
+
+jiraClient.interceptors.request.use((request) => {
+  const url = request.baseURL ? `${request.baseURL}${request.url || ''}` : request.url || '';
+  request.metadata = { startTime: Date.now() };
+  logHttpRequestStart('jira', request.method || 'GET', url);
+  return request;
+});
+
+jiraClient.interceptors.response.use(
+  (response) => {
+    const startTime = response.config.metadata?.startTime || Date.now();
+    const url = response.config.baseURL
+      ? `${response.config.baseURL}${response.config.url || ''}`
+      : response.config.url || '';
+    logHttpRequestSuccess(
+      'jira',
+      response.config.method || 'GET',
+      url,
+      response.status,
+      Date.now() - startTime
+    );
+    return response;
+  },
+  (error) => {
+    const requestConfig = error.config || {};
+    const startTime = requestConfig.metadata?.startTime || Date.now();
+    const url = requestConfig.baseURL
+      ? `${requestConfig.baseURL}${requestConfig.url || ''}`
+      : requestConfig.url || 'unknown-url';
+    const status = error.response?.status;
+    const message = status ? `HTTP ${status}` : error.message;
+    logHttpRequestError('jira', requestConfig.method || 'GET', url, Date.now() - startTime, message);
+    return Promise.reject(error);
+  }
+);
 
 // Pattern: 2–10 uppercase letters, a dash, then digits
 // e.g. PROJ-1234, AB-99, PAYMENTS-12345
@@ -42,7 +84,7 @@ export async function fetchJiraDetails(tickets, config) {
     await Promise.all(
       batch.map(async (ticket) => {
         try {
-          const response = await axios.get(
+          const response = await jiraClient.get(
             `${baseUrl}/rest/api/3/issue/${ticket}?fields=summary,status`,
             {
               headers: {

@@ -1,4 +1,7 @@
 import OpenAI from 'openai';
+import { createDebugFetch } from './http-debug.js';
+
+const openaiDebugFetch = createDebugFetch('openai');
 
 /**
  * Generate two concise "What Changed" bullet strings using OpenAI.
@@ -15,7 +18,7 @@ export async function generateWhatChangedBullets(commits, tickets, ticketDetails
   if (!config.openaiApiKey) return [null, null];
 
   try {
-    const client = new OpenAI({ apiKey: config.openaiApiKey });
+    const client = new OpenAI({ apiKey: config.openaiApiKey, fetch: openaiDebugFetch });
 
     const ticketList = tickets
       .map((t) => {
@@ -116,7 +119,7 @@ function buildFallbackChangelog(commits, tickets, ticketDetails) {
  * @returns {Promise<string>}
  */
 export async function generateSummary(commits, tickets, ticketDetails, config) {
-  const client = new OpenAI({ apiKey: config.openaiApiKey });
+  const client = new OpenAI({ apiKey: config.openaiApiKey, fetch: openaiDebugFetch });
 
   // Build context for the prompt
   const ticketList = tickets
