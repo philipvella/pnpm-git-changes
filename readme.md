@@ -13,6 +13,7 @@
 4. Extracts Jira IDs from commit messages using `\b[A-Z]{2,10}-\d+\b`.
 5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
 6. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
+7. Appends all relevant commit messages as stacked code snippets using triple backticks.
 
 ## Requirements
 
@@ -123,6 +124,13 @@ The main areas updated are :
    `Done` 👤 Jane Smith
 2. [PROJ-124 – Another title](https://your-domain.atlassian.net/browse/PROJ-124)
    `In Progress` 👤 John Doe
+
+🧾 Commit Messages:
+
+```
+1. PROJ-123 add profile edit screen
+2. PROJ-124 fix save button loading state
+```
 ```
 
 ## Notes

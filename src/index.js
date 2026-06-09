@@ -145,6 +145,22 @@ function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
   };
 }
 
+function buildCommitMessageSnippets(relevantCommits) {
+  const lines = [];
+
+  lines.push('🧾 Commit Messages:');
+  lines.push('');
+
+  lines.push('```');
+  for (const [index, commit] of relevantCommits.entries()) {
+    const message = (commit.message || '(No commit message)').trim() || '(No commit message)';
+    lines.push(`${index + 1}. ${message}`);
+  }
+  lines.push('```');
+
+  return lines;
+}
+
 async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, commitAgeDiffSeconds, relevantCommits, tickets, ticketDetails, config }) {
   const date = new Date().toISOString().split('T')[0];
   const lines = [];
@@ -206,6 +222,9 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
       ticketNum++;
     }
   }
+
+  lines.push('');
+  lines.push(...buildCommitMessageSnippets(relevantCommits));
 
   return lines.join('\n');
 }
