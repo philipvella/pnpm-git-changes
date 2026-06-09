@@ -30,11 +30,11 @@ cd /Users/philipvella/work/scripts/git/pnpm-git-changes
 npm install
 ```
 
-Or run the helper setup script:
+Or run the Node-based setup script:
 
 ```bash
-cd /Users/philipvella/work/scripts/git/pnpm-git-changes
-./setup.sh
+cd /Users/philipvella/work/pnpm-git-changes
+npm run setup
 ```
 
 ## Run
