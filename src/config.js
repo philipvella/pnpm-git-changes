@@ -194,7 +194,7 @@ export async function loadConfig() {
       OPENAI_API_KEY: merged.openaiApiKey || '',
     });
 
-    console.log(chalk.green('  ✓ Configuration saved to .env\n'));
+    console.log(chalk.green('  [OK] Configuration saved to .env\n'));
     return merged;
   }
 

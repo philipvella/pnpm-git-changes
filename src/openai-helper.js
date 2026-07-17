@@ -95,16 +95,16 @@ function buildFallbackChangelog(commits, tickets, ticketDetails) {
   return [
     '# Changelog',
     '',
-    '## 🚀 Highlights',
+    '## Highlights',
     '- Production differs from UAT with deployable changes relevant to the selected app.',
     '',
-    '## 🎫 Jira Tickets',
+    '## Jira Tickets',
     ...ticketLines,
     '',
-    '## 🛠️ Commits Included',
+    '## Commits Included',
     ...commitLines,
     '',
-    '## ⚠️ Notes',
+    '## Notes',
     '- Generated fallback summary because AI response formatting was incomplete.',
   ].join('\n');
 }
@@ -156,18 +156,18 @@ ${ticketList || '(none found)'}
 Commits:
 ${commitList}
 
-Return ONLY markdown in this exact changelog structure and keep emoji icons in headings:
+Return ONLY markdown in this exact changelog structure:
 
 # Changelog
-## 🚀 Highlights
+## Highlights
 - ...
-## ✨ Features
+## Features
 - ...
-## 🐛 Fixes
+## Fixes
 - ...
-## 🎫 Jira Tickets
+## Jira Tickets
 - TICKET-ID: summary (status)
-## ⚠️ Risk / Follow-up
+## Risk / Follow-up
 - ...
 
 Rules:
@@ -190,11 +190,9 @@ Rules:
 
   // Guardrail: if the model ignores formatting rules, keep output useful and consistent.
   const looksLikeChangelog = content.includes('# Changelog') && content.includes('## ');
-  const hasEmoji = /[\u{1F300}-\u{1FAFF}]/u.test(content);
-  if (!looksLikeChangelog || !hasEmoji) {
+  if (!looksLikeChangelog) {
     return buildFallbackChangelog(commits, tickets, ticketDetails);
   }
 
   return content;
 }
-

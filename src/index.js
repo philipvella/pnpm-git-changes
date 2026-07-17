@@ -41,7 +41,7 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
         .trim();
 
       if (normalized) {
-        return ['The main areas updated are :', normalized];
+        return ['Main areas updated:', normalized];
       }
     }
   } catch (_) {
@@ -51,12 +51,12 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
   // ── Static fallback ───────────────────────────────────────────────────────
   const topTicketTitles = tickets.map(cleanTicketTitle).filter(Boolean).slice(0, 3);
 
-  // Always use structured format with "The main areas updated are :"
+  // Always use structured format with "Main areas updated:"
   const lines = [];
   if (topTicketTitles.length > 0) {
-    lines.push('The main areas updated are :');
+    lines.push('Main areas updated:');
     topTicketTitles.forEach((title) => {
-      lines.push(`${title},`);
+      lines.push(title);
     });
   } else {
     lines.push('These updates are identified directly from commit history and ticket references in the branch.');
@@ -110,9 +110,9 @@ function pluralize(value, unit) {
 function getAgeSeverityEmoji(diffSeconds) {
   const week = 7 * 24 * 60 * 60;
   const twoWeeks = 14 * 24 * 60 * 60;
-  if (diffSeconds < week) return '🟢';
-  if (diffSeconds < twoWeeks) return '🟠';
-  return '🔴';
+  if (diffSeconds < week) return '[LOW-RISK]';
+  if (diffSeconds < twoWeeks) return '[MEDIUM-RISK]';
+  return '[HIGH-RISK]';
 }
 
 function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
@@ -148,7 +148,7 @@ function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
 function buildCommitMessageSnippets(relevantCommits) {
   const lines = [];
 
-  lines.push('🧾 Commit Messages:');
+  lines.push('Commit Messages:');
   lines.push('');
 
   lines.push('```');
@@ -167,33 +167,33 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   const appName = getAppDisplayName(config);
   const appNameUpper = appName.toUpperCase();
 
-  lines.push(`# 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR ${appNameUpper}`);
+  lines.push(`# CHANGES AVAILABLE FOR TESTING ON UAT FOR ${appNameUpper}`);
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────
   lines.push('');
 
   const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? getAgeSeverityEmoji(commitAgeDiffSeconds) : '';
-  let itemNum = 1;
 
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
   } else {
     if (commitAgeDifference) {
-      lines.push(`${ageEmoji} ${commitAgeDifference}`);
+      lines.push(`- Risk: ${ageEmoji} `);
+      lines.push(`- ${commitAgeDifference}`);
     }
 
-    lines.push(`Compared: Production | \`${prodCommit.slice(0, 7)}\` with UAT | \`${uatCommit.slice(0, 7)}\``);
+    lines.push('- Compared commits: ');
+    lines.push(`  - \`${prodCommit.slice(0, 7)}\` | Production`);
+    lines.push(`  - \`${uatCommit.slice(0, 7)}\` | UAT`);
     lines.push('');
 
     const whatChangedLines = await buildWhatChangedList(relevantCommits, tickets, ticketDetails, config);
     if (whatChangedLines.length > 0) {
       lines.push(whatChangedLines[0]);
-      itemNum = 1;
       for (const line of whatChangedLines.slice(1)) {
         if (!line.trim()) continue;
-        lines.push(`${itemNum}. ${line}`);
-        itemNum++;
+        lines.push(`- ${line}`);
       }
     }
   }
@@ -201,7 +201,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── Jira Tickets summary table ────────────────────────────────────────────
-  lines.push('🎫 Jira Tickets:');
+  lines.push('Jira Tickets:');
   lines.push('');
 
   if (tickets.length === 0) {
@@ -215,7 +215,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
       const url = detail?.url || (config.atlassianBaseUrl ? `${config.atlassianBaseUrl.replace(/\/$/, '')}/browse/${ticket}` : '');
       const status = statusBadge(detail?.status);
       const link = url ? `[${ticket} – ${title}](${url})` : `${ticket} – ${title}`;
-      const authors = ticketContributors[ticket] ? ` 👤 ${[...ticketContributors[ticket]].join(', ')}` : '';
+      const authors = ticketContributors[ticket] ? ` Authors: ${[...ticketContributors[ticket]].join(', ')}` : '';
 
       lines.push(`${ticketNum}. ${link}`);
       lines.push(`   ${status}${authors}`);
@@ -230,7 +230,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
 }
 
 async function main() {
-  console.log(chalk.bold.blue('\n🔍  pnpm-git-changes\n'));
+  console.log(chalk.bold.blue('\npnpm-git-changes\n'));
   console.log(chalk.gray('HTTP debug logging is enabled for outbound API requests.'));
 
   // ── 1. Load or collect configuration ─────────────────────────────────────
@@ -243,16 +243,16 @@ async function main() {
   const uatCommit = (config.uatCommit || '').trim();
 
   if (!prodCommit || !uatCommit) {
-    console.error(chalk.red('  ✗ Both production and UAT commit hashes are required.'));
+    console.error(chalk.red('  [ERROR] Both production and UAT commit hashes are required.'));
     process.exit(1);
   }
 
-  console.log(chalk.green(`  ✓ Production : ${prodCommit}`));
-  console.log(chalk.green(`  ✓ UAT        : ${uatCommit}`));
+  console.log(chalk.green(`  [OK] Production : ${prodCommit}`));
+  console.log(chalk.green(`  [OK] UAT        : ${uatCommit}`));
 
   if (prodCommit === uatCommit) {
     console.log(
-      chalk.yellow('\n⚠️  Both environments are on the same commit — no changes to report.\n')
+      chalk.yellow('\n[WARN] Both environments are on the same commit - no changes to report.\n')
     );
     process.exit(0);
   }
@@ -266,7 +266,7 @@ async function main() {
     commitAgeDifference = commitAgeInfo.description;
     commitAgeDiffSeconds = commitAgeInfo.diffSeconds;
   } catch (err) {
-    console.warn(chalk.yellow(`  ⚠️  Could not compute commit age difference: ${err.message}`));
+    console.warn(chalk.yellow(`  [WARN] Could not compute commit age difference: ${err.message}`));
   }
 
   // ── 3. Get commits between environments ───────────────────────────────────
@@ -278,13 +278,13 @@ async function main() {
     if (commits.length === 0) {
       // Production may be ahead of UAT — try the other direction
       console.log(
-        chalk.yellow('  ⚠️  No commits found in that direction, trying reverse...')
+        chalk.yellow('  [WARN] No commits found in that direction, trying reverse...')
       );
       commits = await getCommitsWithFiles(config.repoPath, uatCommit, prodCommit);
     }
-    console.log(chalk.green(`  ✓ Found ${commits.length} commit(s) between environments`));
+    console.log(chalk.green(`  [OK] Found ${commits.length} commit(s) between environments`));
   } catch (err) {
-    console.error(chalk.red(`  ✗ Failed to read git history: ${err.message}`));
+    console.error(chalk.red(`  [ERROR] Failed to read git history: ${err.message}`));
     process.exit(1);
   }
 
@@ -301,11 +301,11 @@ async function main() {
     relevantCommits = await filterRelevantCommits(commits, config.repoPath, config.appPath);
     console.log(
       chalk.green(
-        `  ✓ ${relevantCommits.length} relevant commit(s) (${commits.length - relevantCommits.length} filtered out)`
+        `  [OK] ${relevantCommits.length} relevant commit(s) (${commits.length - relevantCommits.length} filtered out)`
       )
     );
   } catch (err) {
-    console.warn(chalk.yellow(`  ⚠️  pnpm workspace filter failed — using all commits: ${err.message}`));
+    console.warn(chalk.yellow(`  [WARN] pnpm workspace filter failed - using all commits: ${err.message}`));
     relevantCommits = commits;
   }
 
@@ -324,9 +324,9 @@ async function main() {
     try {
       ticketDetails = await fetchJiraDetails(tickets, config);
       const ok = Object.values(ticketDetails).filter((d) => d.status !== 'Error' && d.status !== 'Not Found').length;
-      console.log(chalk.green(`  ✓ Fetched ${ok}/${tickets.length} ticket(s)`));
+      console.log(chalk.green(`  [OK] Fetched ${ok}/${tickets.length} ticket(s)`));
     } catch (err) {
-      console.warn(chalk.yellow(`  ⚠️  Failed to fetch JIRA details: ${err.message}`));
+      console.warn(chalk.yellow(`  [WARN] Failed to fetch JIRA details: ${err.message}`));
     }
   }
 
@@ -345,8 +345,8 @@ async function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
 
-  console.log(chalk.green(`\n  ✓ Saved changelog to ${OUTPUT_FILE}`));
-  console.log(chalk.bold.green('\n📄  README Output:\n'));
+  console.log(chalk.green(`\n  [OK] Saved changelog to ${OUTPUT_FILE}`));
+  console.log(chalk.bold.green('\nREADME Output:\n'));
   console.log(output);
 
   console.log('\n');
@@ -356,4 +356,3 @@ main().catch((err) => {
   console.error(chalk.red('\nFatal error:'), err.message);
   process.exit(1);
 });
-

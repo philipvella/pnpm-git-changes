@@ -99,7 +99,7 @@ Example ticket output:
 
 ```markdown
 1. [PROJ-123 – Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
-   `Done` 👤 Jane Smith
+   `Done` Authors: Jane Smith
 ```
 
 ## Output shape
@@ -107,25 +107,28 @@ Example ticket output:
 The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 
 ```markdown
-# 📦 CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
+# CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
 
-🟢 Production commit is `3 days` older than UAT.
-Compared: Production | `a1b2c3d` with UAT | `e4f5g6h`
+- Risk: [LOW-RISK] 
+- Production commit is `3 days` older than UAT.
+- Compared commits: 
+  - `a1b2c3d` | Production
+  - `e4f5g6h` | UAT
 
-The main areas updated are :
-1. Ticket title one,
-2. Ticket title two,
-3. Ticket title three,
+Main areas updated:
+- Ticket title one
+- Ticket title two
+- Ticket title three
 
-🎫 Jira Tickets:
+Jira Tickets:
 
-1. [PROJ-123 – Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
-   `Done` 👤 Jane Smith
-2. [PROJ-124 – Another title](https://your-domain.atlassian.net/browse/PROJ-124)
-   `In Progress` 👤 John Doe
+1. [PROJ-123 - Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
+   `Done` Authors: Jane Smith
+2. [PROJ-124 - Another title](https://your-domain.atlassian.net/browse/PROJ-124)
+   `In Progress` Authors: John Doe
 
-🧾 Commit Messages:
+Commit Messages:
 
 ```
 1. PROJ-123 add profile edit screen
@@ -139,9 +142,9 @@ The main areas updated are :
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
 - Output includes a concise one-line commit comparison: `Production | shortHash` with `UAT | shortHash`.
-- The first `📝 Change log:` item includes an age indicator emoji based on commit age difference:
-  - `🟢` (< 7 days)
-  - `🟠` (>= 7 and < 14 days)
-  - `🔴` (>= 14 days)
+- The first change-log item includes an age indicator label based on commit age difference:
+  - `[LOW-RISK]` (< 7 days)
+  - `[MEDIUM-RISK]` (>= 7 and < 14 days)
+  - `[HIGH-RISK]` (>= 14 days)
 - The commit age duration is shown in backticks, e.g. `` `13 days` ``.
 - Jira enrichment is optional; core comparison and ticket extraction still work without it.
