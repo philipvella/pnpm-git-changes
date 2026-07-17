@@ -135,6 +135,15 @@ function combineRiskLevels(...levels) {
   }, null) || '[LOW-RISK]';
 }
 
+function formatRiskLevel(level) {
+  const iconByLevel = {
+    '[LOW-RISK]': '🟢',
+    '[MEDIUM-RISK]': '🟠',
+    '[HIGH-RISK]': '🔴',
+  };
+  return `${iconByLevel[level] || ''} ${level}`.trim();
+}
+
 function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
   const diffSeconds = Math.abs(prodTimestamp - uatTimestamp);
   const day = 24 * 60 * 60;
@@ -202,7 +211,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
   } else {
-    lines.push(`- Risk: ${overallRiskLevel} `);
+    lines.push(`- Risk: ${formatRiskLevel(overallRiskLevel)} `);
     if (commitAgeDifference) {
       lines.push(`- ${commitAgeDifference}`);
     }
