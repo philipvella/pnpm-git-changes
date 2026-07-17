@@ -110,25 +110,25 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 # CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
 
-- Risk: [LOW-RISK] 
-- Production commit is `3 days` older than UAT.
-- Compared commits: 
+- ℹ️ Info: 🟢 [LOW-RISK] 
+- ⏱️ Production commit is `3 days` older than UAT.
+- 🔀 Compared commits: 
   - `a1b2c3d` | Production
   - `e4f5g6h` | UAT
 
-Main areas updated:
+🧩 Main areas updated:
 - Ticket title one
 - Ticket title two
 - Ticket title three
 
-Jira Tickets:
+🎫 Jira Tickets:
 
 1. [PROJ-123 - Ticket title](https://your-domain.atlassian.net/browse/PROJ-123)
    `Done` Authors: Jane Smith
 2. [PROJ-124 - Another title](https://your-domain.atlassian.net/browse/PROJ-124)
    `In Progress` Authors: John Doe
 
-Commit Messages:
+🧾 Commit Messages:
 
 ```
 1. PROJ-123 add profile edit screen
