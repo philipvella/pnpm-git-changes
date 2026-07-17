@@ -142,9 +142,15 @@ Commit Messages:
 - If no commits are found in one direction, it automatically retries the reverse direction.
 - If no relevant commits remain after filtering, the tool exits with no changes.
 - Output includes a concise one-line commit comparison: `Production | shortHash` with `UAT | shortHash`.
-- The first change-log item includes an age indicator label based on commit age difference:
+- The first change-log item includes a combined risk label based on commit age gap and Jira ticket count.
+- Commit age risk:
   - `[LOW-RISK]` (< 7 days)
   - `[MEDIUM-RISK]` (>= 7 and < 14 days)
   - `[HIGH-RISK]` (>= 14 days)
+- Ticket count risk:
+  - `[LOW-RISK]` (< 2 tickets)
+  - `[MEDIUM-RISK]` (>= 2 and < 5 tickets)
+  - `[HIGH-RISK]` (>= 5 tickets)
+- Final risk uses the higher of the age-based and ticket-count-based levels.
 - The commit age duration is shown in backticks, e.g. `` `13 days` ``.
 - Jira enrichment is optional; core comparison and ticket extraction still work without it.

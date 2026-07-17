@@ -107,12 +107,32 @@ function pluralize(value, unit) {
   return `${value} ${unit}${value === 1 ? '' : 's'}`;
 }
 
-function getAgeSeverityEmoji(diffSeconds) {
+function getAgeRiskLevel(diffSeconds) {
   const week = 7 * 24 * 60 * 60;
   const twoWeeks = 14 * 24 * 60 * 60;
   if (diffSeconds < week) return '[LOW-RISK]';
   if (diffSeconds < twoWeeks) return '[MEDIUM-RISK]';
   return '[HIGH-RISK]';
+}
+
+function getTicketCountRiskLevel(ticketCount) {
+  if (ticketCount < 2) return '[LOW-RISK]';
+  if (ticketCount < 5) return '[MEDIUM-RISK]';
+  return '[HIGH-RISK]';
+}
+
+function combineRiskLevels(...levels) {
+  const rank = {
+    '[LOW-RISK]': 1,
+    '[MEDIUM-RISK]': 2,
+    '[HIGH-RISK]': 3,
+  };
+
+  return levels.reduce((highest, current) => {
+    if (!current) return highest;
+    if (!highest) return current;
+    return rank[current] > rank[highest] ? current : highest;
+  }, null) || '[LOW-RISK]';
 }
 
 function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
@@ -173,13 +193,17 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   // ── What Changed ──────────────────────────────────────────────────────────
   lines.push('');
 
-  const ageEmoji = typeof commitAgeDiffSeconds === 'number' ? getAgeSeverityEmoji(commitAgeDiffSeconds) : '';
+  const ageRiskLevel = typeof commitAgeDiffSeconds === 'number'
+    ? getAgeRiskLevel(commitAgeDiffSeconds)
+    : null;
+  const ticketCountRiskLevel = getTicketCountRiskLevel(tickets.length);
+  const overallRiskLevel = combineRiskLevels(ageRiskLevel, ticketCountRiskLevel);
 
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
   } else {
+    lines.push(`- Risk: ${overallRiskLevel} `);
     if (commitAgeDifference) {
-      lines.push(`- Risk: ${ageEmoji} `);
       lines.push(`- ${commitAgeDifference}`);
     }
 
