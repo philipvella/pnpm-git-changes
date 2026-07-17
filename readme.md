@@ -110,9 +110,10 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 # CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
 
 
-- ℹ️ Info: 🟢 [LOW-RISK] 
-- ⏱️ Production commit is `3 days` older than UAT.
-- 🔀 Compared commits: 
+ℹ️ Release Details:
+- Risk: [LOW-RISK] 🟢
+- Production commit is `3 days` older than UAT.
+- Compared commits: 
   - `a1b2c3d` | Production
   - `e4f5g6h` | UAT
 

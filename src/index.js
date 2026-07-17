@@ -41,7 +41,7 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
         .trim();
 
       if (normalized) {
-        return ['🧩 Main areas updated:', normalized];
+        return ['## 🧩 Main areas updated:', normalized];
       }
     }
   } catch (_) {
@@ -135,13 +135,13 @@ function combineRiskLevels(...levels) {
   }, null) || '[LOW-RISK]';
 }
 
-function formatRiskLevel(level) {
+function getRiskEmoji(level) {
   const iconByLevel = {
     '[LOW-RISK]': '🟢',
     '[MEDIUM-RISK]': '🟠',
     '[HIGH-RISK]': '🔴',
   };
-  return `${iconByLevel[level] || ''} ${level}`.trim();
+  return iconByLevel[level] || '⚪';
 }
 
 function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
@@ -177,7 +177,7 @@ function getCommitAgeInfo(uatTimestamp, prodTimestamp) {
 function buildCommitMessageSnippets(relevantCommits) {
   const lines = [];
 
-  lines.push('🧾 Commit Messages:');
+  lines.push('## 🧾 Commit Messages:');
   lines.push('');
 
   lines.push('```');
@@ -211,12 +211,13 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   if (relevantCommits.length === 0) {
     lines.push('_No relevant changes found._');
   } else {
-    lines.push(`- ℹ️ Info: ${formatRiskLevel(overallRiskLevel)} `);
+    lines.push('## ℹ️ Release details:');
+    lines.push(`- Risk: ${getRiskEmoji(overallRiskLevel)} \`${overallRiskLevel}\``);
     if (commitAgeDifference) {
-      lines.push(`- ⏱️ ${commitAgeDifference}`);
+      lines.push(`- ${commitAgeDifference}`);
     }
 
-    lines.push('- 🔀 Compared commits: ');
+    lines.push('- Compared commits: ');
     lines.push(`  - \`${prodCommit.slice(0, 7)}\` | Production`);
     lines.push(`  - \`${uatCommit.slice(0, 7)}\` | UAT`);
     lines.push('');
@@ -234,7 +235,7 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   lines.push('');
 
   // ── Jira Tickets summary table ────────────────────────────────────────────
-  lines.push('🎫 Jira Tickets:');
+  lines.push('## 🎫 Jira Tickets:');
   lines.push('');
 
   if (tickets.length === 0) {
