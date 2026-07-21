@@ -135,6 +135,8 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 1. PROJ-123 add profile edit screen
 2. PROJ-124 fix save button loading state
 ```
+
+_Source repo: [philipvella/pnpm-git-changes](https://github.com/philipvella/pnpm-git-changes)_
 ```
 
 ## Notes

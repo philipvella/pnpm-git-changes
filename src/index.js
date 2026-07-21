@@ -13,6 +13,7 @@ import { generateWhatChangedBullets } from './openai-helper.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = path.join(__dirname, '..', 'output');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'changelog.md');
+const SOURCE_REPO_URL = 'https://github.com/philipvella/pnpm-git-changes';
 
 async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, config) {
   const cleanTicketTitle = (ticket) => {
@@ -259,6 +260,8 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
 
   lines.push('');
   lines.push(...buildCommitMessageSnippets(relevantCommits));
+  lines.push('');
+  lines.push(`_Source repo: [philipvella/pnpm-git-changes](${SOURCE_REPO_URL})_`);
 
   return lines.join('\n');
 }
