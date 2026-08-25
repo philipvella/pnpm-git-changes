@@ -26,28 +26,28 @@
 ## Install
 
 ```bash
-cd /Users/philipvella/work/scripts/git/pnpm-git-changes
+cd /path/to/your/pnpm-git-changes
 npm install
 ```
 
 Or run the Node-based setup script:
 
 ```bash
-cd /Users/philipvella/work/pnpm-git-changes
+cd /path/to/your/pnpm-git-changes
 npm run setup
 ```
 
 ## Run
 
 ```bash
-cd /Users/philipvella/work/scripts/git/pnpm-git-changes
+cd /path/to/your/pnpm-git-changes
 node src/index.js
 ```
 
 Alternative run modes:
 
 ```bash
-cd /Users/philipvella/work/scripts/git/pnpm-git-changes
+cd /path/to/your/pnpm-git-changes
 npm start
 npm link
 pnpm-git-changes
