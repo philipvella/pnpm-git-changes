@@ -211,7 +211,9 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
   const appName = getAppDisplayName(config);
   const appNameUpper = appName.toUpperCase();
 
-  lines.push(`# CHANGES AVAILABLE FOR TESTING ON UAT FOR ${appNameUpper}`);
+  const title = `RELEASE FOR ${appNameUpper}`;
+  const releaseBuildUrl = (config.releaseBuildUrl || '').trim();
+  lines.push(releaseBuildUrl ? `# [${title}](${releaseBuildUrl})` : `# ${title}`);
   lines.push('');
 
   // ── What Changed ──────────────────────────────────────────────────────────

@@ -57,6 +57,8 @@ pnpm-git-changes
 
 On first run, the tool prompts for required config and writes `.env` in this folder.
 
+Alternatively, copy the template and fill it in: `cp .env.example .env`.
+
 On later runs, if saved config exists, it asks:
 - `Yes, use saved settings`
 - `No, update settings`
@@ -85,6 +87,7 @@ Environment variables supported:
 - `ATLASSIAN_EMAIL`
 - `ATLASSIAN_API_TOKEN`
 - `OPENAI_API_KEY`
+- `RELEASE_BUILD_URL` (optional; makes the changelog title a link to the release build)
 - `INCLUDE_ALL_CHANGES` (`true` or `false`)
 
 ## Jira integration
@@ -107,7 +110,7 @@ Example ticket output:
 The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 
 ```markdown
-# CHANGES AVAILABLE FOR TESTING ON UAT FOR MY-APP
+# [RELEASE FOR MY-APP](https://dev.azure.com/org/project/_build/results?buildId=123)
 
 
 ℹ️ Release Details:

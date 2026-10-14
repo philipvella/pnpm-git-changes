@@ -34,6 +34,7 @@ function mergeWithProcess(saved) {
     atlassianApiToken: process.env.ATLASSIAN_API_TOKEN || saved.ATLASSIAN_API_TOKEN || '',
     atlassianBaseUrl: process.env.ATLASSIAN_BASE_URL || saved.ATLASSIAN_BASE_URL || '',
     openaiApiKey: process.env.OPENAI_API_KEY || saved.OPENAI_API_KEY || '',
+    releaseBuildUrl: process.env.RELEASE_BUILD_URL || saved.RELEASE_BUILD_URL || '',
   };
 }
 
@@ -52,6 +53,7 @@ export async function loadConfig() {
     console.log(chalk.gray(`  Prod commit    : ${current.prodCommit}`));
     console.log(chalk.gray(`  UAT commit     : ${current.uatCommit}`));
     if (current.atlassianBaseUrl) console.log(chalk.gray(`  Jira base URL  : ${current.atlassianBaseUrl}`));
+    if (current.releaseBuildUrl) console.log(chalk.gray(`  Release build  : ${current.releaseBuildUrl}`));
 
     const { action } = await inquirer.prompt([
       {
@@ -181,6 +183,7 @@ export async function loadConfig() {
     if (!merged.atlassianEmail) merged.atlassianEmail = current.atlassianEmail;
     if (!merged.atlassianApiToken) merged.atlassianApiToken = current.atlassianApiToken;
     if (!merged.openaiApiKey) merged.openaiApiKey = current.openaiApiKey;
+    merged.releaseBuildUrl = current.releaseBuildUrl;
 
     saveEnv({
       PROD_COMMIT: merged.prodCommit,
@@ -192,6 +195,7 @@ export async function loadConfig() {
       ATLASSIAN_API_TOKEN: merged.atlassianApiToken || '',
       ATLASSIAN_BASE_URL: merged.atlassianBaseUrl || '',
       OPENAI_API_KEY: merged.openaiApiKey || '',
+      RELEASE_BUILD_URL: merged.releaseBuildUrl || '',
     });
 
     console.log(chalk.green('  [OK] Configuration saved to .env\n'));
