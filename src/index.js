@@ -21,7 +21,7 @@ async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, con
     if (!raw || raw === '(Could not fetch)') return ticket;
     return raw
       .replace(/^\[[^\]]+\]\s*/g, '')
-      .replace(/\s*-\s*[A-Z]{2,10}-\d+$/g, '')
+      .replace(/\s*-\s*[A-Z][A-Z0-9]{1,9}-\d+$/g, '')
       .replace(/`/g, '')
       .trim();
   };
@@ -72,7 +72,7 @@ function statusBadge(status) {
 }
 
 function buildTicketContributorsMap(relevantCommits) {
-  const JIRA_TICKET_RE = /\b([A-Z]{2,10}-\d+)\b/g;
+  const JIRA_TICKET_RE = /\b([A-Z][A-Z0-9]{1,9}-\d+)\b/g;
   const map = {};
   for (const commit of relevantCommits) {
     const author = (commit.author || '').trim();

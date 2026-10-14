@@ -10,7 +10,7 @@
    - Excludes lock-file-only commits (`*.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`).
    - By default, in pnpm workspaces, keeps only files in the target app and (when detectable) only changed dependency files/components reachable from the app import graph.
    - Optional toggle: include all repo changes (still excluding lock-file-only commits).
-4. Extracts Jira IDs from commit messages using `\b[A-Z]{2,10}-\d+\b`.
+4. Extracts Jira IDs from commit messages using `\b[A-Z][A-Z0-9]{1,9}-\d+\b`.
 5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
 6. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
 7. Appends all relevant commit messages as stacked code snippets using triple backticks.

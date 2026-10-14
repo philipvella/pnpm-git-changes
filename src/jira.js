@@ -44,7 +44,7 @@ jiraClient.interceptors.response.use(
 
 // Pattern: 2–10 uppercase letters, a dash, then digits
 // e.g. PROJ-1234, AB-99, PAYMENTS-12345
-const JIRA_TICKET_RE = /\b([A-Z]{2,10}-\d+)\b/g;
+const JIRA_TICKET_RE = /\b([A-Z][A-Z0-9]{1,9}-\d+)\b/g;
 
 /**
  * Extract unique JIRA ticket IDs from an array of commit objects.
