@@ -88,6 +88,7 @@ Environment variables supported:
 - `ATLASSIAN_API_TOKEN`
 - `OPENAI_API_KEY`
 - `RELEASE_BUILD_URL` (optional; makes the changelog title a link to the release build)
+- `JIRA_COMMENT_ON_RELEASE` (`true` or `false`, default `false`; posts a release comment on each Jira ticket)
 - `INCLUDE_ALL_CHANGES` (`true` or `false`)
 
 ## Jira integration
@@ -97,6 +98,9 @@ Environment variables supported:
 - Status is shown in backticks below the ticket title.
 - Contributors are extracted from commit authors and shown inline next to each status.
 - If Jira lookup fails for a ticket, the ticket still appears and the tool continues.
+- With `JIRA_COMMENT_ON_RELEASE=true` and `RELEASE_BUILD_URL` set, the tool comments on every ticket:
+  "This ticket is included in **RELEASE FOR MY-APP**." plus a link to the release build.
+  Tickets that already have a comment containing the same build URL are skipped, so re-runs are safe.
 
 Example ticket output:
 

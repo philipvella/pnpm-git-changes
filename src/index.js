@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { loadConfig } from './config.js';
 import { getCommitsWithFiles, getCommitTimestamp } from './git.js';
 import { filterRelevantCommits } from './pnpm.js';
-import { extractJiraTickets, fetchJiraDetails } from './jira.js';
+import { extractJiraTickets, fetchJiraDetails, postJiraReleaseComments } from './jira.js';
 import { generateWhatChangedBullets } from './openai-helper.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,6 +86,32 @@ function buildTicketContributorsMap(relevantCommits) {
     }
   }
   return map;
+}
+
+function getReleaseTitle(config) {
+  return `RELEASE FOR ${getAppDisplayName(config).toUpperCase()}`;
+}
+
+async function commentOnJiraTickets(tickets, config) {
+  const buildUrl = (config.releaseBuildUrl || '').trim();
+  if (!(config.atlassianEmail && config.atlassianApiToken && config.atlassianBaseUrl)) {
+    console.warn(chalk.yellow('\n  [WARN] JIRA_COMMENT_ON_RELEASE is enabled but Jira credentials are missing. Skipping comments.'));
+    return;
+  }
+  if (!buildUrl) {
+    console.warn(chalk.yellow('\n  [WARN] JIRA_COMMENT_ON_RELEASE is enabled but RELEASE_BUILD_URL is not set. Skipping comments.'));
+    return;
+  }
+
+  console.log(chalk.cyan(`\nPosting release comment on ${tickets.length} Jira ticket(s)...`));
+  const { posted, skipped, failed } = await postJiraReleaseComments(tickets, getReleaseTitle(config), buildUrl, config);
+  console.log(chalk.green(`  [OK] Commented on ${posted.length} ticket(s)${posted.length ? `: ${posted.join(', ')}` : ''}`));
+  if (skipped.length) {
+    console.log(chalk.gray(`  [SKIP] Already commented for this build: ${skipped.join(', ')}`));
+  }
+  for (const { ticket, reason } of failed) {
+    console.warn(chalk.yellow(`  [WARN] Failed to comment on ${ticket}: ${reason}`));
+  }
 }
 
 function getAppDisplayName(config) {
@@ -208,10 +234,8 @@ function buildAuthorsList(relevantCommits) {
 async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, commitAgeDiffSeconds, relevantCommits, tickets, ticketDetails, config }) {
   const date = new Date().toISOString().split('T')[0];
   const lines = [];
-  const appName = getAppDisplayName(config);
-  const appNameUpper = appName.toUpperCase();
 
-  const title = `RELEASE FOR ${appNameUpper}`;
+  const title = getReleaseTitle(config);
   const releaseBuildUrl = (config.releaseBuildUrl || '').trim();
   lines.push(releaseBuildUrl ? `# [${title}](${releaseBuildUrl})` : `# ${title}`);
   lines.push('');
@@ -401,6 +425,11 @@ async function main() {
   fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
 
   console.log(chalk.green(`\n  [OK] Saved changelog to ${OUTPUT_FILE}`));
+
+  // ── 8. Optionally comment on Jira tickets ──────────────────────────────────
+  if (config.jiraCommentOnRelease && tickets.length > 0) {
+    await commentOnJiraTickets(tickets, config);
+  }
   console.log(chalk.bold.green('\nREADME Output:\n'));
   console.log(output);
 

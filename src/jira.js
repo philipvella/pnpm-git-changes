@@ -115,3 +115,78 @@ export async function fetchJiraDetails(tickets, config) {
   return results;
 }
 
+
+function buildReleaseCommentBody(releaseTitle, buildUrl) {
+  return {
+    type: 'doc',
+    version: 1,
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'This ticket is included in ' },
+          { type: 'text', text: releaseTitle, marks: [{ type: 'strong' }] },
+          { type: 'text', text: '.' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Release build: ' },
+          { type: 'text', text: buildUrl, marks: [{ type: 'link', attrs: { href: buildUrl } }] },
+        ],
+      },
+    ],
+  };
+}
+
+/**
+ * Post a release comment on each Jira ticket. Tickets that already have a
+ * comment referencing the same build URL are skipped so reruns don't spam.
+ *
+ * @returns {Promise<{posted: string[], skipped: string[], failed: Array<{ticket: string, reason: string}>}>}
+ */
+export async function postJiraReleaseComments(tickets, releaseTitle, buildUrl, config) {
+  const { atlassianEmail, atlassianApiToken, atlassianBaseUrl } = config;
+  const auth = Buffer.from(`${atlassianEmail}:${atlassianApiToken}`).toString('base64');
+  const baseUrl = atlassianBaseUrl.replace(/\/$/, '');
+  const headers = {
+    Authorization: `Basic ${auth}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
+  const body = buildReleaseCommentBody(releaseTitle, buildUrl);
+
+  const result = { posted: [], skipped: [], failed: [] };
+
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < tickets.length; i += BATCH_SIZE) {
+    const batch = tickets.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (ticket) => {
+        const commentUrl = `${baseUrl}/rest/api/3/issue/${ticket}/comment`;
+        try {
+          const existing = await jiraClient.get(`${commentUrl}?maxResults=100&orderBy=-created`, {
+            headers,
+            timeout: 10000,
+          });
+          const alreadyPosted = (existing.data?.comments || []).some((c) =>
+            JSON.stringify(c.body || '').includes(buildUrl)
+          );
+          if (alreadyPosted) {
+            result.skipped.push(ticket);
+            return;
+          }
+
+          await jiraClient.post(commentUrl, { body }, { headers, timeout: 10000 });
+          result.posted.push(ticket);
+        } catch (err) {
+          const reason = err.response?.status ? `HTTP ${err.response.status}` : err.message;
+          result.failed.push({ ticket, reason });
+        }
+      })
+    );
+  }
+
+  return result;
+}
