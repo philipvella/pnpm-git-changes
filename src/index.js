@@ -191,6 +191,20 @@ function buildCommitMessageSnippets(relevantCommits) {
   return lines;
 }
 
+function buildAuthorsList(relevantCommits) {
+  const authors = [...new Set(
+    relevantCommits.map((commit) => (commit.author || '').trim()).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b));
+
+  const lines = ['## 👥 Authors:', ''];
+  if (authors.length === 0) {
+    lines.push('_No authors found._');
+  } else {
+    for (const author of authors) lines.push(`- ${author}`);
+  }
+  return lines;
+}
+
 async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, commitAgeDiffSeconds, relevantCommits, tickets, ticketDetails, config }) {
   const date = new Date().toISOString().split('T')[0];
   const lines = [];
@@ -260,6 +274,8 @@ async function buildReadmeOutput({ prodCommit, uatCommit, commitAgeDifference, c
 
   lines.push('');
   lines.push(...buildCommitMessageSnippets(relevantCommits));
+  lines.push('');
+  lines.push(...buildAuthorsList(relevantCommits));
   lines.push('');
   lines.push(`_Source repo: [philipvella/pnpm-git-changes](${SOURCE_REPO_URL})_`);
 

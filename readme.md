@@ -136,6 +136,10 @@ The tool writes to `output/changelog.md` (gitignored) and prints to stdout:
 2. PROJ-124 fix save button loading state
 ```
 
+👥 Authors:
+
+- John Doe
+
 _Source repo: [philipvella/pnpm-git-changes](https://github.com/philipvella/pnpm-git-changes)_
 ```
 
