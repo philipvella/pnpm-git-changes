@@ -4,16 +4,23 @@
 
 ## What it does
 
-1. Resolves two commit hashes (Production and UAT) entered manually.
-2. Reads git history between those commits (and tries reverse direction if needed).
-3. Filters commits to your app scope:
-   - Excludes lock-file-only commits (`*.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`).
-   - By default, in pnpm workspaces, keeps only files in the target app and (when detectable) only changed dependency files/components reachable from the app import graph.
-   - Optional toggle: include all repo changes (still excluding lock-file-only commits).
-4. Extracts Jira IDs from commit messages using `\b[A-Z][A-Z0-9]{1,9}-\d+\b`.
-5. Optionally fetches Jira `summary` and `status` from Jira Cloud API.
-6. Writes changelog markdown to `output/changelog.md` and also prints it to stdout.
-7. Appends all relevant commit messages as stacked code snippets using triple backticks.
+1. **Compares deployments**
+   - Compares the configured Production and UAT commits.
+   - Fetches git history first and retries in the opposite direction if no commits are found.
+2. **Filters app-relevant changes**
+   - Excludes commits that only change lock files: `*.lock`, `pnpm-lock.yaml`, `yarn.lock`, or `package-lock.json`.
+   - In a pnpm workspace, focuses on the configured app and workspace source files reachable through its imports.
+   - If import analysis is unavailable, falls back to app and workspace dependency paths. Outside a pnpm workspace, includes commits with non-lock-file changes.
+3. **Jira tickets Interactions**
+  - Extracts unique Jira IDs from relevant commit messages using `\b[A-Z][A-Z0-9]{1,9}-\d+\b`.
+   - Optionally fetches each ticket’s summary and status.
+   - Can post a release comment to each ticket when Jira comments and a release build URL are configured; tickets already commented for that build are skipped.
+4. **Creates the release changelog**
+   - Includes the commit comparison, a risk level based on the commit timestamp gap and Jira ticket count, tickets and their commit authors, relevant commit messages, and authors.
+   - Generates the “Main areas updated” summary with OpenAI when configured; otherwise, it falls back to Jira ticket summaries.
+5. **Saves and prints the output**
+   - Writes the markdown changelog to `output/changelog.md`.
+   - Prints the changelog to stdout.
 
 ## Requirements
 
