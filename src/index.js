@@ -14,6 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = path.join(__dirname, '..', 'output');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'changelog.md');
 const SOURCE_REPO_URL = 'https://github.com/philipvella/pnpm-git-changes';
+const SOURCE_REPO_NAME = 'pnpm-git-changes';
 
 async function buildWhatChangedList(relevantCommits, tickets, ticketDetails, config) {
   const cleanTicketTitle = (ticket) => {
@@ -104,7 +105,13 @@ async function commentOnJiraTickets(tickets, config) {
   }
 
   console.log(chalk.cyan(`\nPosting release comment on ${tickets.length} Jira ticket(s)...`));
-  const { posted, skipped, failed } = await postJiraReleaseComments(tickets, getReleaseTitle(config), buildUrl, config);
+  const { posted, skipped, failed } = await postJiraReleaseComments(
+    tickets,
+    getReleaseTitle(config),
+    buildUrl,
+    config,
+    { name: SOURCE_REPO_NAME, url: SOURCE_REPO_URL }
+  );
   console.log(chalk.green(`  [OK] Commented on ${posted.length} ticket(s)${posted.length ? `: ${posted.join(', ')}` : ''}`));
   if (skipped.length) {
     console.log(chalk.gray(`  [SKIP] Already commented for this build: ${skipped.join(', ')}`));

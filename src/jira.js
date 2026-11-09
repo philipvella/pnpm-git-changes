@@ -116,7 +116,7 @@ export async function fetchJiraDetails(tickets, config) {
 }
 
 
-function buildReleaseCommentBody(releaseTitle, buildUrl) {
+function buildReleaseCommentBody(releaseTitle, buildUrl, sourceRepo) {
   return {
     type: 'doc',
     version: 1,
@@ -136,6 +136,16 @@ function buildReleaseCommentBody(releaseTitle, buildUrl) {
           { type: 'text', text: buildUrl, marks: [{ type: 'link', attrs: { href: buildUrl } }] },
         ],
       },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: sourceRepo.name,
+            marks: [{ type: 'link', attrs: { href: sourceRepo.url } }],
+          },
+        ],
+      },
     ],
   };
 }
@@ -146,7 +156,7 @@ function buildReleaseCommentBody(releaseTitle, buildUrl) {
  *
  * @returns {Promise<{posted: string[], skipped: string[], failed: Array<{ticket: string, reason: string}>}>}
  */
-export async function postJiraReleaseComments(tickets, releaseTitle, buildUrl, config) {
+export async function postJiraReleaseComments(tickets, releaseTitle, buildUrl, config, sourceRepo) {
   const { atlassianEmail, atlassianApiToken, atlassianBaseUrl } = config;
   const auth = Buffer.from(`${atlassianEmail}:${atlassianApiToken}`).toString('base64');
   const baseUrl = atlassianBaseUrl.replace(/\/$/, '');
@@ -155,7 +165,7 @@ export async function postJiraReleaseComments(tickets, releaseTitle, buildUrl, c
     Accept: 'application/json',
     'Content-Type': 'application/json',
   };
-  const body = buildReleaseCommentBody(releaseTitle, buildUrl);
+  const body = buildReleaseCommentBody(releaseTitle, buildUrl, sourceRepo);
 
   const result = { posted: [], skipped: [], failed: [] };
 

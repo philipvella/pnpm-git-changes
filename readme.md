@@ -107,6 +107,7 @@ Environment variables supported:
 - If Jira lookup fails for a ticket, the ticket still appears and the tool continues.
 - With `JIRA_COMMENT_ON_RELEASE=true` and `RELEASE_BUILD_URL` set, the tool comments on every ticket:
   "This ticket is included in **RELEASE FOR MY-APP**." plus a link to the release build.
+  The comment ends with a discreet link labeled `pnpm-git-changes`.
   Tickets that already have a comment containing the same build URL are skipped, so re-runs are safe.
 
 Example ticket output:
