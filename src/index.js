@@ -428,7 +428,7 @@ async function main() {
   }
 
   // ── 7. Print results ───────────────────────────────────────────────────────
-  const output = await buildReadmeOutput({
+  let output = await buildReadmeOutput({
     prodCommit,
     uatCommit,
     commitAgeDifference,
@@ -447,7 +447,35 @@ async function main() {
   console.log(chalk.bold.green('\nREADME Output:\n'));
   console.log(output);
 
-  // ── 8. Optionally comment on Jira tickets ──────────────────────────────────
+  // ── 8. Optionally add a release build URL and comment on Jira tickets ─────
+  if (!(config.releaseBuildUrl || '').trim()) {
+    const { releaseBuildUrl } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'releaseBuildUrl',
+        message: 'Enter RELEASE_BUILD_URL to link this changelog and optionally notify Jira tickets (leave blank to skip):',
+        filter: (value) => value.trim(),
+        validate: (value) => {
+          if (!value.trim()) return true;
+          try {
+            const url = new URL(value.trim());
+            if (url.protocol === 'https:' || url.protocol === 'http:') return true;
+          } catch {
+            // Report invalid URLs through the prompt validation.
+          }
+          return 'Enter a valid HTTP or HTTPS release build URL, or leave blank to skip';
+        },
+      },
+    ]);
+
+    if (releaseBuildUrl) {
+      config.releaseBuildUrl = releaseBuildUrl;
+      output = `# [${getReleaseTitle(config)}](${releaseBuildUrl})${output.slice(output.indexOf('\n'))}`;
+      fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
+      console.log(chalk.green(`\n  [OK] Updated changelog release build link in ${OUTPUT_FILE}`));
+    }
+  }
+
   if ((config.releaseBuildUrl || '').trim() && tickets.length > 0) {
     await commentOnJiraTickets(tickets, config);
   }

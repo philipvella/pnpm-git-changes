@@ -108,7 +108,8 @@ Environment variables supported:
   "This ticket is included in **RELEASE FOR MY-APP**." plus a link to the release build.
   The comment ends with a discreet link labeled `pnpm-git-changes`.
   Tickets that already have a comment containing the same build URL are skipped, so re-runs are safe.
-- Without a release build URL or any tickets, no comment prompt is shown. Missing Jira credentials produce a warning instead of posting comments.
+- If `RELEASE_BUILD_URL` is empty, the tool prompts for an optional HTTP or HTTPS URL after displaying the changelog. Entering one updates the saved changelog title link and then offers the Jira comment confirmation. The entered URL applies to this run only; `.env` is not changed.
+- Leaving the URL blank or having no tickets skips the comment confirmation. Missing Jira credentials produce a warning instead of posting comments.
 
 Example ticket output:
 
