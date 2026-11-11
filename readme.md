@@ -94,8 +94,7 @@ Environment variables supported:
 - `ATLASSIAN_EMAIL`
 - `ATLASSIAN_API_TOKEN`
 - `OPENAI_API_KEY`
-- `RELEASE_BUILD_URL` (optional; makes the changelog title a link to the release build)
-- `JIRA_COMMENT_ON_RELEASE` (`true` or `false`, default `false`; posts a release comment on each Jira ticket)
+- `RELEASE_BUILD_URL` (optional; links the changelog title to the release build and enables the final Jira comment confirmation)
 - `INCLUDE_ALL_CHANGES` (`true` or `false`)
 
 ## Jira integration
@@ -105,10 +104,11 @@ Environment variables supported:
 - Status is shown in backticks below the ticket title.
 - Contributors are extracted from commit authors and shown inline next to each status.
 - If Jira lookup fails for a ticket, the ticket still appears and the tool continues.
-- With `JIRA_COMMENT_ON_RELEASE=true` and `RELEASE_BUILD_URL` set, the tool comments on every ticket:
+- With `RELEASE_BUILD_URL` set and Jira credentials configured, after saving and displaying the changelog the tool asks whether to comment on every ticket (defaults to No). Only confirming Yes posts:
   "This ticket is included in **RELEASE FOR MY-APP**." plus a link to the release build.
   The comment ends with a discreet link labeled `pnpm-git-changes`.
   Tickets that already have a comment containing the same build URL are skipped, so re-runs are safe.
+- Without a release build URL or any tickets, no comment prompt is shown. Missing Jira credentials produce a warning instead of posting comments.
 
 Example ticket output:
 

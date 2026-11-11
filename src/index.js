@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import chalk from 'chalk';
+import inquirer from 'inquirer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -96,13 +97,23 @@ function getReleaseTitle(config) {
 async function commentOnJiraTickets(tickets, config) {
   const buildUrl = (config.releaseBuildUrl || '').trim();
   if (!(config.atlassianEmail && config.atlassianApiToken && config.atlassianBaseUrl)) {
-    console.warn(chalk.yellow('\n  [WARN] JIRA_COMMENT_ON_RELEASE is enabled but Jira credentials are missing. Skipping comments.'));
+    console.warn(chalk.yellow('\n  [WARN] Jira credentials are missing. Skipping release comments.'));
     return;
   }
   if (!buildUrl) {
-    console.warn(chalk.yellow('\n  [WARN] JIRA_COMMENT_ON_RELEASE is enabled but RELEASE_BUILD_URL is not set. Skipping comments.'));
+    console.warn(chalk.yellow('\n  [WARN] RELEASE_BUILD_URL is not set. Skipping release comments.'));
     return;
   }
+
+  const { postComments } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'postComments',
+      message: `Post a message on all ${tickets.length} Jira ticket(s) saying they were included in release build ${buildUrl}?`,
+      default: false,
+    },
+  ]);
+  if (!postComments) return;
 
   console.log(chalk.cyan(`\nPosting release comment on ${tickets.length} Jira ticket(s)...`));
   const { posted, skipped, failed } = await postJiraReleaseComments(
@@ -433,12 +444,13 @@ async function main() {
 
   console.log(chalk.green(`\n  [OK] Saved changelog to ${OUTPUT_FILE}`));
 
-  // ── 8. Optionally comment on Jira tickets ──────────────────────────────────
-  if (config.jiraCommentOnRelease && tickets.length > 0) {
-    await commentOnJiraTickets(tickets, config);
-  }
   console.log(chalk.bold.green('\nREADME Output:\n'));
   console.log(output);
+
+  // ── 8. Optionally comment on Jira tickets ──────────────────────────────────
+  if ((config.releaseBuildUrl || '').trim() && tickets.length > 0) {
+    await commentOnJiraTickets(tickets, config);
+  }
 
   console.log('\n');
 }

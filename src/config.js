@@ -23,10 +23,6 @@ function saveEnv(values) {
   fs.writeFileSync(ENV_PATH, lines.join('\n') + '\n', 'utf-8');
 }
 
-function parseBool(value) {
-  return /^(1|true|yes|on)$/i.test(String(value ?? '').trim());
-}
-
 function mergeWithProcess(saved) {
   return {
     prodCommit: process.env.PROD_COMMIT || saved.PROD_COMMIT || '',
@@ -39,7 +35,6 @@ function mergeWithProcess(saved) {
     atlassianBaseUrl: process.env.ATLASSIAN_BASE_URL || saved.ATLASSIAN_BASE_URL || '',
     openaiApiKey: process.env.OPENAI_API_KEY || saved.OPENAI_API_KEY || '',
     releaseBuildUrl: process.env.RELEASE_BUILD_URL || saved.RELEASE_BUILD_URL || '',
-    jiraCommentOnRelease: parseBool(process.env.JIRA_COMMENT_ON_RELEASE ?? saved.JIRA_COMMENT_ON_RELEASE),
   };
 }
 
@@ -59,7 +54,6 @@ export async function loadConfig() {
     console.log(chalk.gray(`  UAT commit     : ${current.uatCommit}`));
     if (current.atlassianBaseUrl) console.log(chalk.gray(`  Jira base URL  : ${current.atlassianBaseUrl}`));
     if (current.releaseBuildUrl) console.log(chalk.gray(`  Release build  : ${current.releaseBuildUrl}`));
-    console.log(chalk.gray(`  Jira comments  : ${current.jiraCommentOnRelease ? 'enabled' : 'disabled'}`));
 
     const { action } = await inquirer.prompt([
       {
@@ -190,7 +184,6 @@ export async function loadConfig() {
     if (!merged.atlassianApiToken) merged.atlassianApiToken = current.atlassianApiToken;
     if (!merged.openaiApiKey) merged.openaiApiKey = current.openaiApiKey;
     merged.releaseBuildUrl = current.releaseBuildUrl;
-    merged.jiraCommentOnRelease = current.jiraCommentOnRelease;
 
     saveEnv({
       PROD_COMMIT: merged.prodCommit,
@@ -203,7 +196,6 @@ export async function loadConfig() {
       ATLASSIAN_BASE_URL: merged.atlassianBaseUrl || '',
       OPENAI_API_KEY: merged.openaiApiKey || '',
       RELEASE_BUILD_URL: merged.releaseBuildUrl || '',
-      JIRA_COMMENT_ON_RELEASE: merged.jiraCommentOnRelease ? 'true' : '',
     });
 
     console.log(chalk.green('  [OK] Configuration saved to .env\n'));
