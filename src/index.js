@@ -427,7 +427,7 @@ async function main() {
     }
   }
 
-  // ── 7. Print results ───────────────────────────────────────────────────────
+  // ── 7. Apply the release build URL and print results ────────────────────────
   let output = await buildReadmeOutput({
     prodCommit,
     uatCommit,
@@ -439,15 +439,7 @@ async function main() {
     config,
   });
 
-  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-  fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
-
-  console.log(chalk.green(`\n  [OK] Saved changelog to ${OUTPUT_FILE}`));
-
-  console.log(chalk.bold.green('\nREADME Output:\n'));
-  console.log(output);
-
-  // ── 8. Optionally add a release build URL and comment on Jira tickets ─────
+  // ── 8. Optionally collect a release build URL and comment on Jira tickets ─
   if (!(config.releaseBuildUrl || '').trim()) {
     const { releaseBuildUrl } = await inquirer.prompt([
       {
@@ -470,11 +462,20 @@ async function main() {
 
     if (releaseBuildUrl) {
       config.releaseBuildUrl = releaseBuildUrl;
-      output = `# [${getReleaseTitle(config)}](${releaseBuildUrl})${output.slice(output.indexOf('\n'))}`;
-      fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
-      console.log(chalk.green(`\n  [OK] Updated changelog release build link in ${OUTPUT_FILE}`));
     }
   }
+
+  const releaseBuildUrl = (config.releaseBuildUrl || '').trim();
+  if (releaseBuildUrl) {
+    output = `# [${getReleaseTitle(config)}](${releaseBuildUrl})${output.slice(output.indexOf('\n'))}`;
+  }
+
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.writeFileSync(OUTPUT_FILE, `${output}\n`, 'utf-8');
+
+  console.log(chalk.green(`\n  [OK] Saved changelog to ${OUTPUT_FILE}`));
+  console.log(chalk.bold.green('\nREADME Output:\n'));
+  console.log(output);
 
   if ((config.releaseBuildUrl || '').trim() && tickets.length > 0) {
     await commentOnJiraTickets(tickets, config);
